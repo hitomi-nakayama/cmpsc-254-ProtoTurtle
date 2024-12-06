@@ -1,6 +1,12 @@
 extern crate session_types;
 use session_types::*;
 
+
+/// This module receives either u8 or i16 and adds them to an internal
+/// accumulator.
+/// It loops indefinitely until the client decides to receive the accumulated
+/// result.
+/// After sending the result, the session is terminated.
 type Accumulator = Rec<Offer<  // client chooses whether to send more data or
                                // get result back from accumulator.
     Offer<  // client chooses between sending u8 or i16.
@@ -10,6 +16,7 @@ type Accumulator = Rec<Offer<  // client chooses whether to send more data or
     Send<i16, Eps>  // return the accumulated result and end session
 >>;
 
+/// The Client is the dual of the Accumulator module.
 type Client = <Accumulator as HasDual>::Dual;
 
 
@@ -20,10 +27,14 @@ fn srv(c: Chan<(), Accumulator>) {
     let mut accumulator: i16 = 0;
     let mut c = c.enter();  // enter loop
     loop {
-        c = match c.offer() {
+        c = match c.offer() {  // allow the client to choose between sending
+                               // more addends or recieveng the result and
+                               // terminating.
             Branch::Left(c) => {
-                match c.offer() {
+                match c.offer() {  // allow the client to choose between
+                                   // sending a u8 or i16.
                     Branch::Left(c) => {
+                        // receive a u8
                         let (c, addend) = c.recv();
 
                         let addend: i16 = addend.into();
@@ -33,6 +44,7 @@ fn srv(c: Chan<(), Accumulator>) {
                         c.zero()
                     },
                     Branch::Right(c) => {
+                        // receive an i16
                         let (c, addend) = c.recv();
                         accumulator += addend;
                         c.zero()
@@ -40,6 +52,7 @@ fn srv(c: Chan<(), Accumulator>) {
                 }
             },
             Branch::Right(c) => {
+                // send the result and terminate session
                 c.send(accumulator).close();
                 break
             }
@@ -47,6 +60,8 @@ fn srv(c: Chan<(), Accumulator>) {
     }
 }
 
+
+/// This example sends no data and receives the result.
 fn client_0(c: Chan<(), Client>) {
     let c = c.enter();  // enter loop
 
@@ -58,6 +73,8 @@ fn client_0(c: Chan<(), Client>) {
     c.close();
 }
 
+
+/// this example sends one u8 and one i16.
 fn client_1(c: Chan<(), Client>) {
     let c = c.enter();  // enter loop
 
