@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4e86c7f94530cce97bbdca7fcd843b3e43dd901d31612868200db7c88d4faccf"
+            "sha256": "aa8b95b7c1b8b4f5097c985c958165122f02e5ba5138ea3897caab4ad1e57bb3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,15 @@
         ]
     },
     "default": {
+        "lark": {
+            "hashes": [
+                "sha256:c2276486b02f0f1b90be155f2c8ba4a8e194d42775786db622faccd652d8e80c",
+                "sha256:ca807d0162cd16cef15a8feecb862d7319e7a09bdb13aef927968e45040fed80"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==1.2.2"
+        },
         "pyrtl": {
             "hashes": [
                 "sha256:5a43ed52aa3c651048968fa32748d79745b6b959e6bcd29925708a25cb77b750",
