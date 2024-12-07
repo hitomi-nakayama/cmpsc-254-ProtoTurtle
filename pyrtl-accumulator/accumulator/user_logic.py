@@ -52,13 +52,13 @@ def main():
 
     acc_logic = AccumulatorLogic()
 
-    fsm_state = Input(name='fsm_state')
+    fsm_state = Input(bitwidth=len(acc_logic.fsm_state), name='fsm_state')
     acc_logic.fsm_state <<= fsm_state
 
-    new_state = Input(name='new_state')
+    new_state = Input(bitwidth=len(acc_logic.new_state), name='new_state')
     acc_logic.new_state <<= new_state
 
-    recv_data = Input(name='recv_data')
+    recv_data = Input(bitwidth=len(acc_logic.recv_data), name='recv_data')
     acc_logic.recv_data <<= recv_data
 
     send_data = Output(name='send_data')
@@ -69,7 +69,7 @@ def main():
     def v(x):
         return x.value
 
-    S = SessionStatesovided_i
+    S = SessionStates
     sim.step_multiple(
         provided_inputs={
             'new_state': [1, 1, 1, 1, 1],
