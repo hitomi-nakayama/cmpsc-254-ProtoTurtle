@@ -1,17 +1,10 @@
 from pyrtl import Input, Output, Simulation, SimulationTrace, temp_working_block
 
-from .states import make_fsm, SessionStates, SessionTransitions
-
+from .states import SessionFSM, SessionStates, SessionTransitions
+from .reports import check_step_multiple
 
 def test_fsm():
     with temp_working_block():
-        input_wire = Input(bitwidth=SessionTransitions.bitwidth(), name="input")
-        state = Output(bitwidth=SessionStates.bitwidth(), name="currentState")
-        new_state = Output(bitwidth=1, name="newState")
-
-        fsm_output_bitwidth = 3
-        output = Output(bitwidth=fsm_output_bitwidth, name="output")
-
         output_values = {
                 'CHOICE': 1,
                 'ADDU': 3,
@@ -19,21 +12,31 @@ def test_fsm():
                 'RESULT': 5
         }
 
-        session_fsm = make_fsm(output_bitwidth=3, output_values=output_values)
-        session_fsm <<= input_wire
+        fsm = SessionFSM(output_values)
 
-        output <<= session_fsm()[0][0:-1]
-        new_state <<= session_fsm()[0][-1]  # the new_state flag is the msb
+        fsm_input = Input(bitwidth=SessionTransitions.bitwidth(), name="input")
+        fsm <<= fsm_input
 
-        state <<= session_fsm()[1]
+        state = Output(name="state")
+        state <<= fsm.state
 
-        sim_trace = SimulationTrace()
-        sim = Simulation(tracer=sim_trace)
+        new_state = Output(name="new_state")
+        new_state <<= fsm.new_state
+
+        output = Output(name="output")
+        output <<= fsm.output
+
+        S = SessionStates
         T = SessionTransitions
-
-        input_inputs = [T.RESET, T.WAIT, T.WAIT, T.U8, T.WAIT, T.U8_TO_LOOP, T.GET_RESULT, T.WAIT, T.END, T.WAIT, T.WAIT]
-        sim_inputs = {
-            'input' : [x.value for x in input_inputs]
-        }
-        sim.step_multiple(sim_inputs)
-        sim_trace.render_trace(trace_list=['input', 'currentState', 'output', 'newState'])
+        check_step_multiple(
+            provided_inputs={
+                'input' : [T.RESET, T.WAIT, T.WAIT, T.U8, T.WAIT, T.U8_TO_LOOP,
+                          T.GET_RESULT, T.WAIT, T.END, T.WAIT, T.WAIT]
+            },
+            expected_outputs={
+                'new_state': [0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0],
+                'state': [S.CHOICE, S.CHOICE, S.CHOICE, S.CHOICE, S.ADDU, S.ADDU,
+                          S.CHOICE, S.RESULT, S.RESULT, S.CHOICE, S.CHOICE],
+                'output': [0, 1, 1, 1, 3, 3, 1, 5, 5, 1, 1]
+            },
+        )

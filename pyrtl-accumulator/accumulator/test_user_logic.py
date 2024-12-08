@@ -2,6 +2,7 @@ from pyrtl import Input, Output, Simulation, temp_working_block
 
 from .user_logic import AccumulatorLogic
 from .states import SessionStates
+from .reports import check_step_multiple
 
 def test_accumulator():
     with temp_working_block():
@@ -19,10 +20,8 @@ def test_accumulator():
         send_data = Output(name='send_data')
         send_data <<= acc_logic.send_data
 
-        sim = Simulation()
-
         S = SessionStates
-        sim.step_multiple(
+        check_step_multiple(
             provided_inputs={
                 'new_state': [1, 1, 1, 1, 1],
                 'fsm_state': [S.CHOICE, S.ADDU, S.ADDI, S.RESULT, S.CHOICE],
