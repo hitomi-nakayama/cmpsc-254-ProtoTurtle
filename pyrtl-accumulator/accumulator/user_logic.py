@@ -19,17 +19,32 @@ class AccumulatorLogic:
         self.recv_data = WireVector(bitwidth=ACCUMULATOR_IN_DATA_BITWIDTH)
         self.accumulator = Register(ACCUMULATOR_REG_BITWIDTH)
 
+        # user logic sets this high when a value has been read
+        self.received = WireVector(bitwidth=1)
+
+        # user logic sets this high when a value is sent
+        self.send = WireVector(bitwidth=1)
+
+        self._connect_logic()
+
+
+    def _connect_logic(self):
         # on session
         with conditional_assignment:
             with self.fsm_state == SessionStates.CHOICE.value:
+                # the user doesn't perform any logic here.
+                # We are waiting for the client to tell us what to do next
                 pass
             with self.fsm_state == SessionStates.ADDU.value:
                 self.accumulator.next |= self.accumulator + self.recv_data[:8]
+                self.received |= 1
             with self.fsm_state == SessionStates.ADDI.value:
                 self.accumulator.next |= self.accumulator + self.recv_data
+                self.received |= 1
             with self.fsm_state == SessionStates.RESULT.value:
                 self.send_data |= self.accumulator
                 self.accumulator.next |= 0
+                self.send |= 1
 
 
 

@@ -20,6 +20,12 @@ def test_accumulator():
         send_data = Output(name='send_data')
         send_data <<= acc_logic.send_data
 
+        send = Output(name='send')
+        send <<= acc_logic.send
+
+        received = Output(name='received')
+        received <<= acc_logic.received
+
         S = SessionStates
         check_step_multiple(
             provided_inputs={
@@ -29,6 +35,8 @@ def test_accumulator():
 
             },
             expected_outputs={
-                'send_data': [0, 0, 0, 3, 0]
+                'send_data': [0, 0, 0, 3, 0],
+                'send':      [0, 0, 0, 1, 0],
+                'received':  [0, 1, 1, 0, 0]
             }
         )

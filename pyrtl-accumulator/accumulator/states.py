@@ -2,7 +2,7 @@ from enum import auto, Enum
 from dataclasses import dataclass
 
 import pyrtl
-from pyrtl import conditional_assignment, WireVector
+from pyrtl import conditional_assignment, otherwise, WireVector
 
 from .fsm import FSM
 from .bit_enum import BitEnum
@@ -83,3 +83,63 @@ class SessionFSM:
     def __ior__(self, wire):
         self.fsm |= wire
         return self
+
+
+class SessionChoices(BitEnum):
+    NULL = auto()
+    ADDEND_U8 = auto()
+    ADDEND_I16 = auto()
+    RESULT_I16 = auto()
+
+
+class AccumulatorFSM:
+    def __init__(self):
+        output_values = defaultdict(lambda: 0)
+        fsm = SessionFSM()
+
+        # expose underlying fsm outputs
+        self.output = self.fsm.output
+        self.new_state = self.fsm.new_state
+        self.state = self.fsm.state
+
+        # hold high to reset
+        self.reset = WireVector(bitwidth=1)
+
+        # the client module will set this to_select_an_offer.
+        self.offer = WireVector(bitwidth=SessionChoices.bitwidth())
+
+        # user logic sets this high when a value has been read
+        self.received = WireVector(bitwidth=1)
+
+        # user logic sets this high when a value is sent
+        self.send = WireVector(bitwidth=1)
+
+        self.connect_state_input(self)
+
+    def _connect_state_input(self):
+        C = SessionChoices
+        T = StateTransitions
+
+        self._state_input = WireVector(bitwidth(StateTransitions))
+
+        with conditional_assignment:
+            with self.reset == 1:
+                self.fsm |= T.RESET
+
+            with self.offer == C.ADDEND_U8:
+                self.fsm |= T.U8
+
+            with self.offer == C.ADDEND_I16:
+                self.fsm |= T.I16
+
+            with self.offer == C.RESULT_I16:
+                self.fsm |= T.GET_RESULT
+
+            with self.received == 1:
+                self.fsm |= T.NEXT
+
+            with self.sent == 1:
+                self.fsm |= T.NEXT
+
+            with otherwise:
+                self.fsm |= T.WAIT
