@@ -11,12 +11,10 @@ from .wires import bitwidth
 
 class SessionTransitions(BitEnum):
     WAIT = auto()  # added to make the fsm asynchronous
+    NEXT = auto()  # go to the next state when there isn't a choice
     U8 = auto()
-    U8_TO_LOOP = auto()
     I16 = auto()
-    I16_TO_LOOP = auto()
     GET_RESULT = auto()
-    END = auto()
     RESET = auto()
 
 
@@ -52,9 +50,9 @@ class SessionFSM:
             f'CHOICE + {T.U8} -> ADDU, {new_val("ADDU")}',
             f'CHOICE + {T.I16} -> ADDI, {new_val("ADDI")}',
             f'CHOICE + {T.GET_RESULT} -> RESULT, {new_val("RESULT")}',
-            f'ADDU + {T.U8_TO_LOOP} -> CHOICE, {new_val("CHOICE")}',
-            f'ADDI + {T.I16_TO_LOOP} -> CHOICE, {new_val("CHOICE")}',
-            f'RESULT + {T.END} -> CHOICE, {new_val("CHOICE")}',
+            f'ADDU + {T.NEXT} -> CHOICE, {new_val("CHOICE")}',
+            f'ADDI + {T.NEXT} -> CHOICE, {new_val("CHOICE")}',
+            f'RESULT + {T.NEXT} -> CHOICE, {new_val("CHOICE")}',
 
             # We add the wait transitions because we want our circuit design to be
             # async.

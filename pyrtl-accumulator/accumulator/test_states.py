@@ -30,8 +30,8 @@ def test_fsm():
         T = SessionTransitions
         check_step_multiple(
             provided_inputs={
-                'input' : [T.RESET, T.WAIT, T.WAIT, T.U8, T.WAIT, T.U8_TO_LOOP,
-                          T.GET_RESULT, T.WAIT, T.END, T.WAIT, T.WAIT]
+                'input' : [T.RESET, T.WAIT, T.WAIT, T.U8, T.WAIT, T.NEXT,
+                          T.GET_RESULT, T.WAIT, T.NEXT, T.WAIT, T.WAIT]
             },
             expected_outputs={
                 'new_state': [0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0],
