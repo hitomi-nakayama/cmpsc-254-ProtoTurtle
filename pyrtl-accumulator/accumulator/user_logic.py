@@ -2,8 +2,7 @@
 
 from pyrtl import conditional_assignment, Input, Output, Register, WireVector
 
-from .states import NEW_STATE_BITWIDTH, SessionStates, SessionTransitions, SESSION_STATE_BITWIDTH
-
+from .states import NEW_STATE_BITWIDTH, SessionStates, SessionTransitions
 
 ACCUMULATOR_REG_BITWIDTH = 16
 ACCUMULATOR_IN_DATA_BITWIDTH = 16
@@ -14,7 +13,7 @@ CLIENT_OUT_DATA_BITWIDTH = ACCUMULATOR_IN_DATA_BITWIDTH
 
 class AccumulatorLogic:
     def __init__(self, name=''):
-        self.fsm_state = WireVector(bitwidth=SESSION_STATE_BITWIDTH,
+        self.fsm_state = WireVector(bitwidth=SessionStates.bitwidth(),
                                     name=concat_name('accumulator_fsm_state', name))
         self.new_state = WireVector(bitwidth=NEW_STATE_BITWIDTH,
                                     name=concat_name('accumulator_new_state', name))
