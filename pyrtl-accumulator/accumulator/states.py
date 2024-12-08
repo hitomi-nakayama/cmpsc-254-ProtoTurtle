@@ -30,6 +30,7 @@ SESSION_STATE_NAMES = [x.name for x in SessionStates]
 
 NEW_STATE_BITWIDTH = 1
 
+
 def make_fsm(output_bitwidth: int, output_values: dict[str, int]):
     """The highest bit of the output is high when it is a new state.
     output_bitwidth is the size of the state values (excluding the new state bit)"""

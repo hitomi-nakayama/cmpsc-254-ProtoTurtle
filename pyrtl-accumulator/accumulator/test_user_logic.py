@@ -21,19 +21,15 @@ def test_accumulator():
 
         sim = Simulation()
 
-        def v(x):
-            return x.value
-
         S = SessionStates
         sim.step_multiple(
             provided_inputs={
                 'new_state': [1, 1, 1, 1, 1],
-                'fsm_state': [v(S.CHOICE), v(S.ADDU), v(S.ADDI),
-                                          v(S.RESULT), v(S.CHOICE)],
+                'fsm_state': [S.CHOICE, S.ADDU, S.ADDI, S.RESULT, S.CHOICE],
                 'recv_data': [0, 5, -2, 1, 0]
 
             },
             expected_outputs={
-                'accumulator_send_data': [0, 0, 0, 3, 0]
+                'send_data': [0, 0, 0, 3, 0]
             }
         )
