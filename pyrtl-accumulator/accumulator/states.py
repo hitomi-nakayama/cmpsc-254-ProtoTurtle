@@ -1,5 +1,6 @@
-from enum import auto, Enum
+from collections import defaultdict
 from dataclasses import dataclass
+from enum import auto, Enum
 
 import pyrtl
 from pyrtl import conditional_assignment, otherwise, WireVector
@@ -31,11 +32,15 @@ NEW_STATE_BITWIDTH = 1
 
 
 class SessionFSM:
-    def __init__(self, output_values: dict[str, int]):
+    def __init__(self, output_values: dict[str, int] | None = None):
         """The highest bit of the output is high when it is a new state.
         output_bitwidth is the size of the state values (excluding the new state bit)"""
 
-        output_bitwidth = max(bitwidth(x) for x in output_values.values())
+        if output_values:
+            output_bitwidth = max(bitwidth(x) for x in output_values.values())
+        else:
+            output_values = defaultdict(lambda: 0)
+            output_bitwidth = 1
 
         def old_val(state: str) -> int:
             return output_values[state]
@@ -94,11 +99,9 @@ class SessionChoices(BitEnum):
 
 class AccumulatorFSM:
     def __init__(self):
-        output_values = defaultdict(lambda: 0)
-        fsm = SessionFSM()
+        self.fsm = SessionFSM()
 
         # expose underlying fsm outputs
-        self.output = self.fsm.output
         self.new_state = self.fsm.new_state
         self.state = self.fsm.state
 
@@ -114,32 +117,33 @@ class AccumulatorFSM:
         # user logic sets this high when a value is sent
         self.send = WireVector(bitwidth=1)
 
-        self.connect_state_input(self)
+        self._connect_state_input()
 
     def _connect_state_input(self):
         C = SessionChoices
-        T = StateTransitions
+        T = SessionTransitions
 
-        self._state_input = WireVector(bitwidth(StateTransitions))
+        self._state_input = WireVector(T.bitwidth())
+        self.fsm <<= self._state_input
 
         with conditional_assignment:
             with self.reset == 1:
-                self.fsm |= T.RESET
+                self._state_input |= T.RESET
 
             with self.offer == C.ADDEND_U8:
-                self.fsm |= T.U8
+                self._state_input |= T.U8
 
             with self.offer == C.ADDEND_I16:
-                self.fsm |= T.I16
+                self._state_input |= T.I16
 
             with self.offer == C.RESULT_I16:
-                self.fsm |= T.GET_RESULT
+                self._state_input |= T.GET_RESULT
 
             with self.received == 1:
-                self.fsm |= T.NEXT
+                self._state_input |= T.NEXT
 
-            with self.sent == 1:
-                self.fsm |= T.NEXT
+            with self.send == 1:
+                self._state_input |= T.NEXT
 
             with otherwise:
-                self.fsm |= T.WAIT
+                self._state_input |= T.WAIT
