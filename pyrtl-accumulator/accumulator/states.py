@@ -147,3 +147,6 @@ class AccumulatorFSM:
 
             with otherwise:
                 self._state_input |= T.WAIT
+
+
+LOOP_SEQ_BITWIDTH = 2
