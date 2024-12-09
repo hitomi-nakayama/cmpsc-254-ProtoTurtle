@@ -63,6 +63,7 @@ class ClientLogic:
         self.recv_data = WireVector(bitwidth=ACCUMULATOR_OUT_DATA_BITWIDTH)
 
         self.debug_output = WireVector(bitwidth=ACCUMULATOR_OUT_DATA_BITWIDTH)
+        self.debug_output_valid = WireVector(bitwidth=1)
 
         # user logic sets this high when a value has been read
         self.received = WireVector(bitwidth=1)
@@ -93,4 +94,5 @@ class ClientLogic:
                 self.send |= 1
             with self.fsm_state == SessionStates.RESULT.value:
                 self.debug_output |= self.recv_data
+                self.debug_output_valid |= 1
                 self.received |= 1

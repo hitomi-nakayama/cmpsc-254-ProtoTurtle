@@ -72,6 +72,9 @@ def test_client():
         debug_output = Output(name='debug_output')
         debug_output <<= logic.debug_output
 
+        debug_output_valid = Output(name='debug_output_valid')
+        debug_output_valid <<= logic.debug_output_valid
+
         C = SessionChoices
         S = SessionStates
         check_step_multiple(
@@ -86,6 +89,7 @@ def test_client():
                 'send_data':    [0, 15, 0, 2**16 - 3, 0, 0, 0],
                 'send':         [0, 1, 0, 1, 0, 0, 0],
                 'received':     [0, 0, 0, 0, 0, 1, 0],
-                'debug_output': [0, 0, 0, 0, 0, 12, 0]
+                'debug_output': [0, 0, 0, 0, 0, 12, 0],
+                'debug_output_valid': [0, 0, 0, 0, 0, 1, 0]
             }
         )

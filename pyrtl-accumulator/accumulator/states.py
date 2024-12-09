@@ -186,15 +186,19 @@ class ClientFSM:
 
         with conditional_assignment:
             with self.reset == 1:
+                self.loop_seq.next |= 0
                 self._state_input |= T.RESET
 
             with self.choice == C.ADDEND_U8:
+                self.loop_seq.next |= self.loop_seq + 1
                 self._state_input |= T.U8
 
             with self.choice == C.ADDEND_I16:
+                self.loop_seq.next |= self.loop_seq + 1
                 self._state_input |= T.I16
 
             with self.choice == C.RESULT_I16:
+                self.loop_seq.next |= self.loop_seq + 1
                 self._state_input |= T.GET_RESULT
 
             with self.received == 1:
@@ -205,7 +209,3 @@ class ClientFSM:
 
             with otherwise:
                 self._state_input |= T.WAIT
-
-        with conditional_assignment:
-            with self.choice != C.NULL:
-                self.loop_seq.next |= self.loop_seq + 1
