@@ -1,7 +1,7 @@
 from pyrtl import Input, Output, Simulation, SimulationTrace, temp_working_block
 
-from .states import (AccumulatorFSM, SessionChoices, SessionFSM, SessionStates,
-                     SessionTransitions)
+from .states import (AccumulatorFSM, ClientFSM, SessionChoices, SessionFSM,
+                     SessionStates, SessionTransitions)
 from .reports import check_step_multiple
 
 def test_fsm():
@@ -82,5 +82,51 @@ def test_accumulator_fsm():
                 'new_state': [0, 1, 0, 1, 0, 1, 1, 0, 1],
                 'state': [0, S.CHOICE, S.CHOICE, S.ADDI, S.ADDI, S.CHOICE,
                           S.RESULT, S.RESULT, S.CHOICE],
+            },
+        )
+
+
+def test_client_fsm():
+    with temp_working_block():
+        fsm = ClientFSM()
+
+        reset = Input(bitwidth=1, name="reset")
+        fsm.reset <<= reset
+
+        received = Input(bitwidth=1, name='received')
+        fsm.received <<= received
+
+        send = Input(bitwidth=1, name='send')
+        fsm.send <<= send
+
+        choice = Input(bitwidth=SessionChoices.bitwidth(), name="choice")
+        fsm.choice <<= choice
+
+        state = Output(name="state")
+        state <<= fsm.state
+
+        new_state = Output(name="new_state")
+        new_state <<= fsm.new_state
+
+        loop_seq = Output(name="loop_seq")
+        loop_seq <<= fsm.loop_seq
+
+        C = SessionChoices
+        S = SessionStates
+        T = SessionTransitions
+        check_step_multiple(
+            provided_inputs={
+                'reset': [1, 0, 0, 0, 0, 0, 0, 0, 0],
+                'send': [0, 0, 0, 0, 0, 0, 0, 1, 0],
+                'received': [0, 0, 0, 0, 1, 0, 0, 0, 0],
+                'choice': [0, C.NULL, C.ADDEND_I16, C.NULL, C.NULL, C.RESULT_I16,
+                          C.NULL, C.NULL, C.NULL],
+            },
+            expected_outputs={
+                'new_state': [0, 1, 0, 1, 0, 1, 1, 0, 1],
+                'state': [0, S.CHOICE, S.CHOICE, S.ADDI, S.ADDI, S.CHOICE,
+                          S.RESULT, S.RESULT, S.CHOICE],
+
+                'loop_seq': [0, 0, 0, 1, 1, 1, 2, 2, 2]
             },
         )

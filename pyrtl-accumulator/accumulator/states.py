@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import auto, Enum
 
 import pyrtl
-from pyrtl import conditional_assignment, otherwise, WireVector
+from pyrtl import conditional_assignment, otherwise, Register, WireVector
 
 from .fsm import FSM
 from .bit_enum import BitEnum
@@ -150,3 +150,62 @@ class AccumulatorFSM:
 
 
 LOOP_SEQ_BITWIDTH = 2
+
+
+class ClientFSM:
+    def __init__(self):
+        self.fsm = SessionFSM()
+
+        # expose underlying fsm outputs
+        self.new_state = self.fsm.new_state
+        self.state = self.fsm.state
+
+        # hold high to reset
+        self.reset = WireVector(bitwidth=1)
+
+        # tells us which iteration of the loop we're in
+        self.loop_seq = Register(bitwidth=LOOP_SEQ_BITWIDTH)
+
+        # which choice to take?
+        self.choice = WireVector(bitwidth=SessionChoices.bitwidth())
+
+        # user logic sets this high when a value has been read
+        self.received = WireVector(bitwidth=1)
+
+        # user logic sets this high when a value is sent
+        self.send = WireVector(bitwidth=1)
+
+        self._connect_state_input()
+
+    def _connect_state_input(self):
+        C = SessionChoices
+        T = SessionTransitions
+
+        self._state_input = WireVector(T.bitwidth())
+        self.fsm <<= self._state_input
+
+        with conditional_assignment:
+            with self.reset == 1:
+                self._state_input |= T.RESET
+
+            with self.choice == C.ADDEND_U8:
+                self._state_input |= T.U8
+
+            with self.choice == C.ADDEND_I16:
+                self._state_input |= T.I16
+
+            with self.choice == C.RESULT_I16:
+                self._state_input |= T.GET_RESULT
+
+            with self.received == 1:
+                self._state_input |= T.NEXT
+
+            with self.send == 1:
+                self._state_input |= T.NEXT
+
+            with otherwise:
+                self._state_input |= T.WAIT
+
+        with conditional_assignment:
+            with self.choice != C.NULL:
+                self.loop_seq.next |= self.loop_seq + 1
