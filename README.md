@@ -5,7 +5,7 @@ Code for the final project in CMPSC 254 Fall 2024 done by Hitomi Nakayama and Sa
 Contains the implementation of the accumulator program written in our proposed DSL
 
 ## pyrtl-accumulator directory
-Contains the PyRTL implementation of the FSM and logic that represents an equivalent accumulator program as the one written in ProtoTurtle as found the prototurtle-accumulator directory. This implementation uses pipenv for python versioning.
+Contains the PyRTL implementation of the FSM and logic that represents an equivalent accumulator program as the one written in ProtoTurtle as found the prototurtle-accumulator directory. This implementation uses pipenv for python version management.
 
 ## session-types-accumulator directory
 Contains the initial implementation of our accumulator program written in Rust using the session-types library.
