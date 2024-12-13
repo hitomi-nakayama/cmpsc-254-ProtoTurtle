@@ -1,7 +1,10 @@
 # ProtoTurtle
 
 ## pyrtl-accumulator directory
-Contains the PyRTL implementation of the FSM and logic that represents an equivalent accumulator program as the one written in ProtoTurtle as found the ??? directory.
+Contains the PyRTL implementation of the FSM and logic that represents an equivalent accumulator program as the one written in ProtoTurtle as found the prototurtle-accumulator directory.
+
+## prototurtle-accumulator directory
+Contains the implementation of the accumulator program written in our proposed DSL
 
 ## session-types-accumulator directory
 Contains the initial implementation of our accumulator program written in Rust using the session-types library.
