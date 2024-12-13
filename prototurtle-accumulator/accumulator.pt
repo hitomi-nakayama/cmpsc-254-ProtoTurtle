@@ -1,0 +1,28 @@
+sessiontype AccSess = Loop<Choose<
+						(Send<u8>, Cont),
+						(Send<i16>, Cont),
+						(Recv<i16>, End)>>
+
+sessiontype AccSess = Loop<Offer<
+						(Recv<u8>, Cont),
+						(Recv<i16>, Cont),
+						(Send<i16>, End)>>
+
+module Client(c: ClientSess) {
+	register result: i16;
+	c.loop_seq [
+		c.choose.send(5:u8),
+		c.choose.recv(result)
+	]
+	c.end
+}
+
+module Accumulator(C: AccSess) {
+	register acc: i16 = 0;
+	c.loop {
+		c.offer
+			c.recv u8(x) => {acc += x.into(); c.cont}
+			c.recv i16(x) => {acc += x; c.cont}
+			c.send i16 {acc; c.end}
+	}
+}
